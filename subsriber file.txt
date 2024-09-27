@@ -1,0 +1,42 @@
+import time
+import paho.mqtt.client as mqtt
+
+# MQTT Broker Information
+BROKER = "mqtt.eclipseprojects.io"
+TOPIC = "hotel/branch/temperature"
+THRESHOLD = 30.0  # Temperature threshold for raising an alarm
+ALARM_DURATION = 5 * 60  # 5 minutes = 300 seconds
+
+# Store data locally with timestamps
+temperature_data = []
+alarm_triggered = False
+
+# MQTT Callback when message is received
+def on_message(client, userdata, message):
+    global alarm_triggered
+    temperature = float(message.payload.decode())
+    timestamp = time.strftime('%Y-%m-%d %H:%M:%S')
+
+    # Log the data with timestamp
+    temperature_data.append({'timestamp': timestamp, 'temperature': temperature})
+    print(f"Received: {temperature} at {timestamp}")
+
+    # Check if the temperature crosses the threshold for 5 consecutive minutes
+    recent_data = temperature_data[-5:]  # Last 5 data points
+    if all(entry['temperature'] > THRESHOLD for entry in recent_data):
+        if not alarm_triggered:
+            print("ALARM: Temperature has been above the threshold for 5 minutes!")
+            alarm_triggered = True
+    else:
+        alarm_triggered = False
+
+# Subscriber to MQTT Broker
+def subscribe_temperature():
+    client = mqtt.Client()
+    client.on_message = on_message
+    client.connect(BROKER, 1883, 60)
+    client.subscribe(TOPIC)
+    client.loop_forever()
+
+if _name_ == "_main_":
+    subscribe_temperature()

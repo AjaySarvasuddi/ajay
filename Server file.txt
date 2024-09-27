@@ -1,0 +1,25 @@
+from flask import Flask, jsonify
+import time
+
+app = Flask(_name_)
+
+# In-memory storage for the latest sensor data
+latest_temperature_data = {
+    "temperature": None,
+    "timestamp": None
+}
+
+@app.route('/sensor/temperature', methods=['GET'])
+def get_latest_temperature():
+    if latest_temperature_data['temperature'] is None:
+        return jsonify({"error": "No data available"}), 404
+    return jsonify(latest_temperature_data)
+
+def simulate_sensor_data():
+    while True:
+        latest_temperature_data['temperature'] = round(random.uniform(20.0, 35.0), 2)
+        latest_temperature_data['timestamp'] = time.strftime('%Y-%m-%d %H:%M:%S')
+        time.sleep(60)  # Simulate data every 60 seconds
+
+if _name_ == "_main_":
+    app.run(debug=True, host='0.0.0.0', port=5000)

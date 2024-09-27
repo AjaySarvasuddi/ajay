@@ -1,0 +1,24 @@
+import time
+import random
+import paho.mqtt.client as mqtt
+
+# MQTT Broker Information
+BROKER = "mqtt.eclipseprojects.io"  # Replace with your broker address
+TOPIC = "hotel/branch/temperature"
+
+# Simulate Temperature Sensor Data
+def read_temperature():
+    return round(random.uniform(20.0, 35.0), 2)  # Simulate temperature between 20°C and 35°C
+
+def publish_temperature():
+    client = mqtt.Client()
+    client.connect(BROKER, 1883, 60)
+
+    while True:
+        temperature = read_temperature()
+        client.publish(TOPIC, temperature)
+        print(f"Published: {temperature} to topic {TOPIC}")
+        time.sleep(60)  # Wait for 60 seconds before publishing the next data point
+
+if _name_ == "_main_":
+    publish_temperature()
